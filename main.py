@@ -184,7 +184,7 @@ class AUV:
         return self.auv.get_depth()
 
     def calculate(self):
-        # self.update_image()
+        self.update_image()
         # тут вычисляется функция состояния
         getattr(self, self.state)()
 
@@ -236,12 +236,16 @@ class AUV:
         if SIMULATOR:
             image = self.auv.get_image_front()
         else:
+            video = cv.VideoCapture(0)
+            res, image = video.read()
+            cv.resize(image, (320, 240))
+            """
             with picamera.PiCamera() as camera:
                 camera.resolution = (320, 240)
                 camera.framerate = 24
                 image = np.empty((240, 320, 3), dtype=np.uint8)
                 camera.capture(image, 'rgb')
-
+                """
         self.rgb_image = image
         self.hsv_image = cv.cvtColor(image, cv.COLOR_BGR2HSV)
         return image
@@ -272,7 +276,6 @@ auv = AUV()
 font = cv.FONT_HERSHEY_COMPLEX_SMALL
 
 while True:
-
     # if settings.SIMULATOR:
     #     cv.imshow('', auv.rgb_image)
     #     cv.waitKey(1)
