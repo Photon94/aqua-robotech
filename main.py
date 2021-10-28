@@ -177,15 +177,21 @@ class AUV:
             return angle - 360.0
         return angle
 
+    def get_roll(self):
+        return self.auv.get_pitch()
+
+    def get_depth(self):
+        return self.auv.get_depth()
+
     def calculate(self):
-        self.update_image()
+        # self.update_image()
         # тут вычисляется функция состояния
         getattr(self, self.state)()
 
         self.speed_controller.update(-self.speed)
-        self.yaw_controller.update(self.yaw)
-        self.roll_controller.update(self.roll)
-        self.depth_controller.update(self.depth)
+        self.yaw_controller.update(self.yaw - self.get_yaw())
+        self.roll_controller.update(self.roll - self.get_roll())
+        self.depth_controller.update(self.depth - self.get_depth())
 
         self.yaw_left = self.yaw_controller.output + self.speed_controller.output
         self.yaw_right = -self.yaw_controller.output + self.speed_controller.output
@@ -217,11 +223,11 @@ class AUV:
             self.auv.set_motor_power(0, self.yaw_left)
             self.auv.set_motor_power(1, self.yaw_right)
         else:
-            self.auv.set_motor_power(3, self.yaw_left)
-            self.auv.set_motor_power(0, self.yaw_right)
+            self.auv.set_motor_power(1, -self.yaw_left)
+            self.auv.set_motor_power(2, self.yaw_right)
             # уточнить номера моторов!
-            self.auv.set_motor_power(1, self.roll_right)
-            self.auv.set_motor_power(2, self.roll_left)
+            self.auv.set_motor_power(3, -self.roll_right)
+            self.auv.set_motor_power(0, self.roll_left)
 
     def get_yaw(self):
         return self.auv.get_yaw()
@@ -240,18 +246,21 @@ class AUV:
         self.hsv_image = cv.cvtColor(image, cv.COLOR_BGR2HSV)
         return image
 
-    @color(50, 50, 0)
+    @color(100, 100, 100)
     def undefined(self):
-        self.speed = 20
-        self.depth = 20
+        time.sleep(5)
+        self.find()
         pass
 
+    @color(50, 0, 0)
     def start_position(self):
         pass
 
+    @color(50, 0, 50)
     def turn_forward(self):
         pass
 
+    @color(50, 0, 50)
     def rotate(self):
         pass
 
