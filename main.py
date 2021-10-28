@@ -237,7 +237,7 @@ class AUV:
             image = self.auv.get_image_front()
         else:
             video = cv.VideoCapture(0)
-            res, image = video.read()
+            _, image = video.read()
             cv.resize(image, (320, 240))
             """
             with picamera.PiCamera() as camera:
