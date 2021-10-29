@@ -11,6 +11,14 @@ class robot():
     def __init__(self, power:int) -> None:
         self.__body = mur.mur_init()
         self.__default_power:int = power
+        self.valid_directions = [
+            "вверх", 
+            "вниз", 
+            "вправо", 
+            "влево", 
+            "вперед", 
+            "назад"
+        ]
 
 
     def _turn_left(self, t:int, pow:int = None) -> None:
@@ -128,16 +136,8 @@ class robot():
             exit(-1)
 
 
-    def _check_valid(order:list(str))->bool:
-        valid_directions = [
-            "вверх", 
-            "вниз", 
-            "вправо", 
-            "влево", 
-            "вперед", 
-            "назад"
-        ]
-        if order[0] not in valid_directions:
+    def _check_valid(self, order:list(str))->bool:
+        if order[0] not in self.valid_directions:
             return False
         try:
             time_int = int(order[1])
