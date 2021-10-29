@@ -1,4 +1,5 @@
-from _typeshed import Self
+import time
+from os import times
 import re
 import pymurapy as mur
 
@@ -91,7 +92,7 @@ class robot():
                 self._up(int(arg1))
             else:
                 self._up(int(arg1), int(arg2))
-
+        time.sleep(int(arg1[1]))
 
 
     def run_sequence(self, order_path:str='order.ord'):
@@ -99,11 +100,11 @@ class robot():
         # Очередь действий записывается в многострочном виде
         # Каждое действие записывается отдельной строкой
         # Каждая строка имеет вид:
-        # Д:<действие>, В:<время>[, М:<мощность>] 
+        # <действие>,<время>[,<мощность>]
+        # допустимы пробелы
         # действия: "вверх", "вниз", "вправо", "влево", "вперед", "назад"
         # время - время действия в секундах
         # мощность - мощность движетелей для действия в единицах от -100 до 100
-
         try:
             with open(order_path, 'r') as order_file:
                 order_text:str = order_file.read
@@ -112,18 +113,38 @@ class robot():
                     order_list_str[i].replace(' ', '')
                     order_list_str[i].replace('ё', 'е')
                     order_list_str[i].lower()
-                re_pattern = r'д:([а-я]+)+,в:(\d+)+(,м:\d+)?'
                 for order in order_list_str:
-                    matches = re.match(re_pattern, order)
-                    order_name = matches.group(1)
-                    time_val = matches.group(2)
-                    if (len(matches.group(3))!=None):
-                        pow_val = matches.group(3)
-                        self._run_func_by_name_str(order_name, time_val, pow_val)
+                    order_details = order.split(',')
+                    order_type = order_details[0]
+                    order_time = order_details[1]
+                    if self._check_valid(order): continue
+                    if len(order_details==3):
+                        order_power = order_details[2]
+                        self._run_func_by_name_str(order_type, order_time, order_power)
                     else:
-                        self._run_func_by_name_str(order_name, time_val)
+                        self._run_func_by_name_str(order_type, order_time)
         except:
             print('Ошибка чтения файла с инструкциями')
             exit(-1)
 
-        pass
+
+    def _check_valid(order:list(str))->bool:
+        valid_directions = [
+            "вверх", 
+            "вниз", 
+            "вправо", 
+            "влево", 
+            "вперед", 
+            "назад"
+        ]
+        if order[0] not in valid_directions:
+            return False
+        try:
+            time_int = int(order[1])
+            if time_int <= 0: return False
+            if len(order)==3 and int(order[2]):
+                power_int = int(order[1])
+                if power_int<=0 or power_int>100: return False
+        except ValueError:
+            return False
+        return True
